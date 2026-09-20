@@ -3,12 +3,25 @@ Hotel Service Request System - SQLite Database Layer
 Handles all persistent storage, schema management, and CRUD operations.
 """
 
+import os
+import shutil
 import sqlite3
 import datetime
 import random
 from typing import List, Dict, Any, Optional, Tuple
 
-DB_PATH = "hotel_service.db"
+# Handle serverless/read-only environment (e.g., Vercel, AWS Lambda)
+if os.environ.get("VERCEL") or os.environ.get("AWS_LAMBDA_FUNCTION_NAME"):
+    DB_DIR = "/tmp"
+    DB_PATH = os.path.join(DB_DIR, "hotel_service.db")
+    SOURCE_DB = os.path.join(os.path.dirname(os.path.abspath(__file__)), "hotel_service.db")
+    if not os.path.exists(DB_PATH) and os.path.exists(SOURCE_DB):
+        try:
+            shutil.copy2(SOURCE_DB, DB_PATH)
+        except Exception:
+            pass
+else:
+    DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "hotel_service.db")
 
 
 def get_connection() -> sqlite3.Connection:
