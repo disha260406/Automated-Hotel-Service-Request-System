@@ -1,0 +1,1441 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+  <title>The Grand Azure Hotel - AI Concierge & Operations Orchestrator</title>
+  <link href="https://fonts.googleapis.com" rel="preconnect" />
+  <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
+    rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+    rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "on-surface-variant": "#434655",
+            "surface-variant": "#d3e4fe",
+            "on-primary-fixed-variant": "#0039b5",
+            "on-tertiary-fixed": "#2f1500",
+            "inverse-primary": "#b7c4ff",
+            "tertiary-fixed-dim": "#ffb77d",
+            "error": "#ba1a1a",
+            "secondary-container": "#dae2fd",
+            "primary": "#0037b0",
+            "on-tertiary-container": "#ffcba3",
+            "primary-container": "#1d4ed8",
+            "on-primary": "#ffffff",
+            "on-tertiary-fixed-variant": "#6e3900",
+            "tertiary": "#6b3700",
+            "on-secondary-fixed-variant": "#3f465c",
+            "surface": "#f8f9ff",
+            "on-secondary-fixed": "#131b2e",
+            "surface-container-high": "#dce9ff",
+            "inverse-surface": "#213145",
+            "on-secondary": "#ffffff",
+            "on-background": "#0b1c30",
+            "on-surface": "#0b1c30",
+            "surface-tint": "#2151da",
+            "error-container": "#ffdad6",
+            "secondary-fixed-dim": "#bec6e0",
+            "background": "#f8f9ff",
+            "surface-bright": "#f8f9ff",
+            "surface-container-highest": "#d3e4fe",
+            "tertiary-container": "#8d4b00",
+            "primary-fixed": "#dce1ff",
+            "surface-container-low": "#eff4ff",
+            "on-error": "#ffffff",
+            "on-error-container": "#93000a",
+            "outline": "#747686",
+            "outline-variant": "#c4c5d7",
+            "inverse-on-surface": "#eaf1ff",
+            "surface-container": "#e5eeff",
+            "secondary-fixed": "#dae2fd",
+            "on-primary-fixed": "#001551",
+            "secondary": "#565e74",
+            "surface-container-lowest": "#ffffff",
+            "primary-fixed-dim": "#b7c4ff",
+            "on-primary-container": "#cad3ff",
+            "surface-dim": "#cbdbf5",
+            "tertiary-fixed": "#ffdcc3",
+            "on-tertiary": "#ffffff",
+            "on-secondary-container": "#5c647a"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.125rem",
+            "lg": "0.25rem",
+            "xl": "0.5rem",
+            "full": "0.75rem"
+          },
+          "fontFamily": {
+            "headline-sm": ["Inter"],
+            "headline-xl": ["Inter"],
+            "body-lg": ["Inter"],
+            "code-md": ["JetBrains Mono"],
+            "headline-xl-mobile": ["Inter"],
+            "label-md": ["Inter"],
+            "code-lg": ["JetBrains Mono"],
+            "body-sm": ["Inter"],
+            "body-md": ["Inter"],
+            "code-sm": ["JetBrains Mono"],
+            "headline-lg": ["Inter"],
+            "label-lg": ["Inter"]
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+      vertical-align: middle;
+      display: inline-block;
+      line-height: 1;
+    }
+
+    .scrollbar-thin::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
+    }
+
+    .scrollbar-thin::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .scrollbar-thin::-webkit-scrollbar-thumb {
+      background: #c4c5d7;
+      border-radius: 4px;
+    }
+
+    @keyframes pulse-subtle {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.7; transform: scale(1.02); }
+    }
+
+    .pulse-urgent {
+      animation: pulse-subtle 1.8s infinite ease-in-out;
+    }
+
+    .toast-enter {
+      animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    @keyframes slideIn {
+      from { transform: translateY(-20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+  </style>
+</head>
+
+<body class="bg-surface text-on-surface font-body-md antialiased overflow-x-hidden min-h-screen flex flex-col">
+
+  <!-- FLOATING TOAST NOTIFICATION CONTAINER -->
+  <div id="toastContainer" class="fixed top-16 right-8 z-[100] space-y-2 pointer-events-none"></div>
+
+  <!-- TOP APP BAR -->
+  <header
+    class="flex justify-between items-center w-full px-6 h-14 bg-inverse-surface text-surface-container-lowest border-b border-outline shadow-sm z-50 sticky top-0">
+    <div class="flex items-center gap-4">
+      <div class="flex items-center gap-2">
+        <span class="material-symbols-outlined text-primary-fixed" data-icon="hotel_class">hotel_class</span>
+        <span
+          class="font-headline-sm text-sm lg:text-base font-semibold tracking-tight text-surface-container-lowest">The
+          Grand Azure Luxury Suites - AI Service Orchestration</span>
+      </div>
+      <div class="hidden lg:flex items-center gap-2 pl-4 border-l border-outline/50">
+        <span
+          class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-surface-container-high/20 border border-primary-fixed/30 text-primary-fixed font-code-sm text-xs">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+          LangGraph: ACTIVE (v1.2.11)
+        </span>
+        <span
+          class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-surface-container-high/20 border border-outline/40 text-surface-container-highest font-code-sm text-xs">
+          <span class="material-symbols-outlined text-xs" data-icon="database">database</span>
+          SQLite: hotel_service.db (WAL)
+        </span>
+        <span
+          class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-tertiary-container/40 border border-tertiary-fixed-dim/40 text-tertiary-fixed font-label-md text-xs cursor-pointer hover:bg-tertiary-container/60 transition"
+          id="activeGuestBadge" onclick="cycleGuestSuite()" title="Click to switch active guest suite">
+          <span class="material-symbols-outlined text-xs" data-icon="crown">crown</span>
+          <span id="headerGuestLabel">Suite 412: Eleanor Vance (VIP Titanium)</span>
+          <span class="material-symbols-outlined text-xs opacity-70">swap_horiz</span>
+        </span>
+      </div>
+    </div>
+
+    <!-- Right Controls -->
+    <div class="flex items-center gap-3">
+      <div class="hidden xl:flex items-center gap-2">
+        <button onclick="resetAndSeedDB()"
+          class="flex items-center gap-1.5 px-3 py-1.5 rounded bg-surface-container-low/10 hover:bg-on-surface-variant/20 text-surface-bright font-label-md text-xs transition-colors border border-outline/40 active:scale-[0.99]">
+          <span class="material-symbols-outlined text-sm" data-icon="refresh">refresh</span>
+          Reset & Re-Seed SQLite
+        </button>
+        <a href="/gradio" target="_blank"
+          class="flex items-center gap-1.5 px-3.5 py-1.5 rounded bg-primary-container text-on-primary font-label-md text-xs shadow hover:brightness-110 transition active:scale-[0.99]">
+          <span class="material-symbols-outlined text-sm" data-icon="open_in_new">open_in_new</span>
+          Gradio Studio
+        </a>
+      </div>
+      <div class="flex items-center gap-1 border-l border-outline/50 pl-3">
+        <button onclick="switchRightTab('sqlite')"
+          class="p-2 text-outline-variant hover:text-surface-bright rounded transition-colors" title="SQLite Matrix">
+          <span class="material-symbols-outlined" data-icon="database">database</span>
+        </button>
+        <button onclick="refreshLiveState(true)"
+          class="p-2 text-outline-variant hover:text-surface-bright rounded transition-colors" title="Sync Agent State">
+          <span class="material-symbols-outlined" data-icon="sync">sync</span>
+        </button>
+        <button onclick="switchRightTab('graph')"
+          class="p-2 text-outline-variant hover:text-surface-bright rounded transition-colors"
+          title="LangGraph Topology">
+          <span class="material-symbols-outlined" data-icon="hub">hub</span>
+        </button>
+      </div>
+      <div class="flex items-center gap-2 pl-2">
+        <div
+          class="w-8 h-8 rounded bg-primary-container text-on-primary flex items-center justify-center font-semibold text-xs border border-primary-fixed/40 cursor-pointer"
+          title="Active Suite Initials (Click to cycle suite)" id="userAvatar" onclick="cycleGuestSuite()">
+          EV
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN 3-COLUMN ORCHESTRATOR WORKSPACE -->
+  <main class="flex-1 w-full max-w-[1920px] mx-auto px-8 py-6 grid grid-cols-1 lg:grid-cols-12 gap-6 bg-surface">
+
+    <!-- LEFT COLUMN: Guest AI Chatbot & Quick Actions (4 Cols) -->
+    <section
+      class="lg:col-span-4 flex flex-col bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm overflow-hidden h-[calc(100vh-5.5rem)] min-h-[680px]">
+
+      <!-- Header / Guest Badge -->
+      <div class="p-4 bg-surface-container-low border-b border-outline-variant flex items-center justify-between gap-3">
+        <div class="flex items-center gap-3">
+          <div class="relative cursor-pointer" onclick="cycleGuestSuite()" title="Click to cycle suite">
+            <div
+              class="w-10 h-10 rounded-full bg-surface-container-high border border-outline-variant flex items-center justify-center font-bold text-sm text-primary"
+              id="roomNumberCircle">
+              412
+            </div>
+            <span
+              class="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-surface-container-lowest"></span>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h2 class="font-headline-sm text-xs lg:text-sm font-semibold text-on-surface truncate" id="guestNameHeader">Suite 412: Eleanor Vance</h2>
+              <span class="px-2 py-0.5 bg-tertiary-fixed text-on-tertiary-fixed font-label-md text-[10px] rounded shrink-0"
+                id="guestTierHeader">VIP Titanium</span>
+            </div>
+            <p class="font-body-sm text-[11px] text-on-surface-variant flex items-center gap-1 mt-0.5">
+              <span class="material-symbols-outlined text-xs text-primary" data-icon="smart_toy">smart_toy</span>
+              Grand Azure AI Agentic Concierge
+            </p>
+          </div>
+        </div>
+        <div>
+          <button type="button" onclick="dispatchEmergency()"
+            class="px-2.5 py-1.5 text-xs font-label-md bg-error text-on-error rounded-lg hover:brightness-110 transition flex items-center gap-1 shadow-sm active:scale-95">
+            <span class="material-symbols-outlined text-sm" data-icon="emergency">emergency</span>
+            <span>Emergency</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Suite Selector Pills -->
+      <div class="px-4 py-2 bg-surface-container-lowest border-b border-outline-variant flex items-center gap-1.5 overflow-x-auto scrollbar-thin">
+        <span class="text-[10px] font-semibold text-on-surface-variant uppercase tracking-wider shrink-0 mr-1">Suite:</span>
+        <button type="button" onclick="selectGuestSuite('412')" id="suiteBtn_412"
+          class="px-2.5 py-1 rounded-md text-[11px] font-semibold bg-primary text-on-primary transition shrink-0">
+          412 (Eleanor)
+        </button>
+        <button type="button" onclick="selectGuestSuite('101')" id="suiteBtn_101"
+          class="px-2.5 py-1 rounded-md text-[11px] font-medium bg-surface text-on-surface-variant hover:bg-surface-container transition shrink-0">
+          101 (Ramesh)
+        </button>
+        <button type="button" onclick="selectGuestSuite('604')" id="suiteBtn_604"
+          class="px-2.5 py-1 rounded-md text-[11px] font-medium bg-surface text-on-surface-variant hover:bg-surface-container transition shrink-0">
+          604 (Elena)
+        </button>
+        <button type="button" onclick="selectGuestSuite('PH-02')" id="suiteBtn_PH-02"
+          class="px-2.5 py-1 rounded-md text-[11px] font-medium bg-surface text-on-surface-variant hover:bg-surface-container transition shrink-0">
+          PH-02 (Sterling)
+        </button>
+        <button type="button" onclick="selectGuestSuite('318')" id="suiteBtn_318"
+          class="px-2.5 py-1 rounded-md text-[11px] font-medium bg-surface text-on-surface-variant hover:bg-surface-container transition shrink-0">
+          318 (Kenji)
+        </button>
+        <button type="button" onclick="selectGuestSuite('205')" id="suiteBtn_205"
+          class="px-2.5 py-1 rounded-md text-[11px] font-medium bg-surface text-on-surface-variant hover:bg-surface-container transition shrink-0">
+          205 (Michael)
+        </button>
+      </div>
+
+      <!-- Quick Action Prompt Chips -->
+      <div class="px-4 py-3 bg-surface border-b border-outline-variant">
+        <div
+          class="text-[10px] font-label-md text-on-surface-variant mb-2 uppercase tracking-wider flex items-center justify-between">
+          <span class="font-semibold">Suggested Guest Inquiries (Click to Send)</span>
+          <span class="font-code-sm text-[10px] text-primary">Zero-Shot Intent</span>
+        </div>
+        <div class="flex flex-wrap gap-1.5">
+          <button type="button" onclick="handleChatSubmit('Please send 2 extra feather pillows and fresh towels to my suite.')"
+            class="text-left px-2.5 py-1 text-[11px] bg-surface-container-lowest border border-outline-variant/80 hover:border-primary text-on-surface rounded-lg transition active:scale-[0.98] truncate max-w-full shadow-2xs hover:bg-primary/5">
+            🛋️ Extra pillows & towels
+          </button>
+          <button type="button" onclick="handleChatSubmit('Emergency! Leaking shower faucet in bathroom with water pooling!')"
+            class="text-left px-2.5 py-1 text-[11px] bg-surface-container-lowest border border-outline-variant/80 hover:border-primary text-on-surface rounded-lg transition active:scale-[0.98] truncate max-w-full shadow-2xs hover:bg-primary/5">
+            🚿 Leaking shower faucet
+          </button>
+          <button type="button" onclick="handleChatSubmit('I would like to order 1 Wagyu Burger with Truffle Fries and Vintage Wine.')"
+            class="text-left px-2.5 py-1 text-[11px] bg-surface-container-lowest border border-outline-variant/80 hover:border-primary text-on-surface rounded-lg transition active:scale-[0.98] truncate max-w-full shadow-2xs hover:bg-primary/5">
+            🍔 Wagyu Burger & Truffle Fries
+          </button>
+          <button type="button"
+            onclick="handleChatSubmit('Please pick up 2 formal business shirts for express dry cleaning before 8 AM.')"
+            class="text-left px-2.5 py-1 text-[11px] bg-surface-container-lowest border border-outline-variant/80 hover:border-primary text-on-surface rounded-lg transition active:scale-[0.98] truncate max-w-full shadow-2xs hover:bg-primary/5">
+            👔 Express dry cleaning
+          </button>
+          <button type="button"
+            onclick="handleChatSubmit('What are the breakfast hours and where is the pool located?')"
+            class="text-left px-2.5 py-1 text-[11px] bg-surface-container-lowest border border-outline-variant/80 hover:border-primary text-on-surface rounded-lg transition active:scale-[0.98] truncate max-w-full shadow-2xs hover:bg-primary/5">
+            🍳 Breakfast hours & Pool FAQ
+          </button>
+        </div>
+      </div>
+
+      <!-- Chat Stream -->
+      <div id="chatStream" class="flex-1 p-4 overflow-y-auto space-y-4 scrollbar-thin bg-surface/40">
+        <!-- Timestamp separator -->
+        <div class="flex justify-center my-1">
+          <span
+            class="px-2.5 py-1 bg-surface-container-high/70 rounded-full text-[10px] font-code-sm text-on-surface-variant" id="chatSessionLabel">Live
+            LangGraph Session &bull; Suite 412</span>
+        </div>
+
+        <!-- Initial Welcome Guest Bubble -->
+        <div class="flex flex-col items-start max-w-[90%]">
+          <div class="flex items-center gap-1.5 text-[11px] font-label-md text-on-surface-variant mb-1 px-1">
+            <span class="material-symbols-outlined text-xs">person</span>
+            <span id="initialGuestBubbleLabel">Eleanor Vance (Suite 412)</span>
+          </div>
+          <div
+            class="bg-surface-container-lowest border border-outline-variant rounded-xl p-3.5 text-on-surface text-xs leading-relaxed shadow-sm">
+            The air conditioning in Suite 412 is blowing lukewarm air and making a rattling sound. We have a meeting in
+            45 minutes, can someone fix this immediately?
+          </div>
+        </div>
+
+        <!-- Initial LangGraph Trace Box -->
+        <div
+          class="p-3.5 bg-inverse-surface text-surface-container-lowest rounded-xl border border-outline/50 font-code-sm text-[11px] shadow-sm space-y-2.5">
+          <div class="flex items-center justify-between pb-1.5 border-b border-outline/30">
+            <div class="flex items-center gap-2 text-primary-fixed font-semibold">
+              <span class="material-symbols-outlined text-sm" data-icon="psychology">psychology</span>
+              LangGraph State Execution Trace
+            </div>
+            <span
+              class="px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 text-[10px] border border-emerald-700/50">state:
+              routed</span>
+          </div>
+          <div class="grid grid-cols-2 gap-x-3 gap-y-1.5 text-surface-container-highest text-[11px]">
+            <div>Intent: <span class="text-amber-300 font-mono">HVAC_Malfunction</span></div>
+            <div>Department: <span class="text-sky-300 font-mono">Maintenance</span></div>
+            <div>Priority: <span class="text-rose-300 font-mono font-bold">URGENT (P1)</span></div>
+            <div>Target SLA: <span class="text-emerald-300 font-mono">15 mins</span></div>
+          </div>
+          <div
+            class="pt-1.5 border-t border-outline/30 flex items-center justify-between text-[10px] text-outline-variant">
+            <span>Tools Invoked: `query_staff()`, `create_ticket()`</span>
+            <span class="text-primary-fixed font-mono">thread_id: #ha-8492</span>
+          </div>
+        </div>
+
+        <!-- Initial AI Agent Response Bubble -->
+        <div class="flex flex-col items-end max-w-[92%] ml-auto">
+          <div class="flex items-center gap-1.5 text-[11px] font-label-md text-primary mb-1 px-1">
+            <span class="material-symbols-outlined text-xs" data-icon="smart_toy">smart_toy</span>
+            <span>Grand Azure AI Concierge</span>
+          </div>
+          <div class="bg-primary-container text-on-primary rounded-xl p-3.5 text-xs leading-relaxed shadow-sm space-y-2.5 w-full">
+            <p>Certainly, Ms. Vance. I've automatically classified this as an <span
+                class="underline font-semibold decoration-rose-300">Urgent Maintenance request (Ticket #HA-8492)</span>.
+              Building Engineer <strong>Marcus Vance</strong> has been auto-dispatched to Suite 412 with HVAC diagnostic
+              tools.</p>
+            <div class="pt-2 border-t border-primary/40 text-[11px] flex items-center justify-between">
+              <span class="flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-sm" data-icon="schedule">schedule</span>
+                Estimated arrival: 6 minutes
+              </span>
+              <span class="px-2 py-0.5 rounded bg-black/25 text-[10px] font-mono">Auto-Dispatched</span>
+            </div>
+          </div>
+          <div class="flex items-center gap-2 mt-1 px-1">
+            <span class="text-[10px] text-on-surface-variant font-code-sm">Processed by LangGraph StateGraph Node Pipeline</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Message Input Bar -->
+      <div class="p-3.5 bg-surface-container-lowest border-t border-outline-variant space-y-2">
+        <div
+          class="flex items-center gap-2 bg-surface-container-low border border-outline-variant rounded-xl p-2 focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary transition">
+          <button type="button" class="p-1.5 text-on-surface-variant hover:text-primary rounded-lg transition"
+            title="Attach Diagnostic Photo or Video">
+            <span class="material-symbols-outlined text-base" data-icon="attach_file">attach_file</span>
+          </button>
+          <input id="chatInputBox"
+            onkeydown="if(event.key==='Enter'){event.preventDefault(); handleChatSubmit();}"
+            class="flex-1 bg-transparent border-0 text-xs text-on-surface focus:ring-0 px-2 py-1 placeholder:text-on-surface-variant/60"
+            placeholder="Type guest request (e.g. 'Need 2 towels' or 'AC broken')..." type="text" />
+          <button type="button" onclick="handleChatSubmit()" id="chatSendButton"
+            class="px-3.5 py-1.5 bg-primary text-on-primary text-xs font-semibold rounded-lg hover:bg-primary-container transition flex items-center gap-1.5 active:scale-[0.98] shadow-sm cursor-pointer">
+            <span>Send</span>
+            <span class="material-symbols-outlined text-sm" data-icon="send">send</span>
+          </button>
+        </div>
+        <div class="flex justify-between items-center px-1 text-[10px] text-on-surface-variant">
+          <span>Supported: Natural Language, Emergency Commands, Hotel FAQs</span>
+          <span class="font-code-sm text-primary">LangGraph Agent: Active</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- CENTER COLUMN: Active Request Cards & Real-Time Tracking Timeline (4 Cols) -->
+    <section class="lg:col-span-4 flex flex-col space-y-4 h-[calc(100vh-5.5rem)] overflow-y-auto scrollbar-thin pr-1">
+
+      <!-- Department Filter Bar -->
+      <div
+        class="bg-surface-container-lowest p-3 rounded-xl border border-outline-variant shadow-sm flex items-center justify-between">
+        <div class="flex items-center gap-1.5 overflow-x-auto scrollbar-thin py-0.5">
+          <button onclick="filterDept('All')" id="filterAllBtn"
+            class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-primary text-on-primary border border-primary/30 transition">
+            All (<span id="countAll">0</span>)
+          </button>
+          <button onclick="filterDept('Maintenance')" id="filterMaintBtn"
+            class="px-2.5 py-1 rounded-lg text-xs font-medium text-on-surface-variant hover:bg-surface-container transition">
+            Maintenance (<span id="countMaint">0</span>)
+          </button>
+          <button onclick="filterDept('Housekeeping')" id="filterHouseBtn"
+            class="px-2.5 py-1 rounded-lg text-xs font-medium text-on-surface-variant hover:bg-surface-container transition">
+            Housekeeping (<span id="countHouse">0</span>)
+          </button>
+          <button onclick="filterDept('Room Service')" id="filterDiningBtn"
+            class="px-2.5 py-1 rounded-lg text-xs font-medium text-on-surface-variant hover:bg-surface-container transition">
+            Dining (<span id="countDining">0</span>)
+          </button>
+          <button onclick="filterDept('Laundry')" id="filterLaundryBtn"
+            class="px-2.5 py-1 rounded-lg text-xs font-medium text-on-surface-variant hover:bg-surface-container transition">
+            Laundry (<span id="countLaundry">0</span>)
+          </button>
+        </div>
+        <button onclick="refreshLiveState(true)" class="p-1.5 text-on-surface-variant hover:text-on-surface rounded-lg transition"
+          title="Refresh Feed">
+          <span class="material-symbols-outlined text-base" data-icon="refresh">refresh</span>
+        </button>
+      </div>
+
+      <!-- Highlighted Active Ticket Card -->
+      <div id="highlightedTicketCard"
+        class="bg-surface-container-lowest rounded-xl border-2 border-primary shadow-sm overflow-hidden relative">
+        <div
+          class="bg-surface-container-low px-4 py-3 border-b border-outline-variant flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span id="mainTicketBadge"
+              class="px-2 py-0.5 rounded font-code-md text-[11px] font-semibold bg-rose-100 text-rose-800 border border-rose-300 flex items-center gap-1.5 pulse-urgent">
+              <span class="w-1.5 h-1.5 rounded-full bg-rose-600"></span>
+              URGENT - P1
+            </span>
+            <span id="mainTicketId" class="font-code-md text-xs font-bold text-on-surface">#HA-8492</span>
+          </div>
+          <span id="mainTicketSuite" class="text-xs text-on-surface-variant font-label-md">Suite 412 • Eleanor Vance</span>
+        </div>
+        <div class="p-5 space-y-4">
+          <div>
+            <div class="flex items-center justify-between gap-2">
+              <h3 id="mainTicketTitle" class="font-headline-sm text-sm font-semibold text-on-surface">HVAC Malfunction &
+                Rattling Sound</h3>
+              <span id="mainTicketDept"
+                class="text-xs font-label-md text-primary bg-surface-container px-2 py-0.5 rounded-md">Maintenance / HVAC</span>
+            </div>
+            <p id="mainTicketDesc" class="font-body-sm text-xs text-on-surface-variant mt-1 leading-relaxed">Air
+              blowing lukewarm; VIP has critical briefing scheduled in 45 minutes.</p>
+          </div>
+
+          <!-- Staff Assignment & Live ETA -->
+          <div class="bg-surface p-3 rounded-xl border border-outline-variant flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div id="mainStaffAvatar"
+                class="w-9 h-9 rounded-lg bg-inverse-surface text-surface-container-lowest flex items-center justify-center font-bold text-xs">
+                MV
+              </div>
+              <div>
+                <div id="mainStaffName" class="text-xs font-semibold text-on-surface">Marcus Vance</div>
+                <div id="mainStaffRole" class="text-[10px] text-on-surface-variant font-label-md">Engineering Duty Specialist</div>
+              </div>
+            </div>
+            <div class="text-right">
+              <div id="mainStaffStatus"
+                class="text-xs font-bold text-emerald-700 flex items-center gap-1 justify-end">
+                <span class="material-symbols-outlined text-sm" data-icon="directions_walk">directions_walk</span>
+                <span>In Transit</span>
+              </div>
+              <div id="mainStaffEta" class="text-[10px] font-code-sm text-on-surface-variant mt-0.5">ETA: ~6 mins</div>
+            </div>
+          </div>
+
+          <!-- SLA Progress Bar -->
+          <div class="space-y-1">
+            <div class="flex justify-between text-[10px] font-code-sm">
+              <span class="text-on-surface-variant" id="mainSlaWindowLabel">Live SLA Window: 15 mins</span>
+              <span id="mainSlaPercentText" class="font-semibold text-amber-700">6 / 15 mins elapsed (40%)</span>
+            </div>
+            <div class="w-full h-2 bg-surface-container-high rounded-full overflow-hidden">
+              <div id="mainSlaBar" class="h-full bg-gradient-to-r from-emerald-500 to-amber-500 rounded-full transition-all duration-500"
+                style="width: 40%"></div>
+            </div>
+          </div>
+
+          <!-- Interactive Stepper Timeline -->
+          <div class="pt-2 border-t border-outline-variant/60">
+            <h4 class="text-xs font-label-lg font-semibold text-on-surface mb-2.5 flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-base text-primary" data-icon="route">route</span>
+              Orchestration Lifecycle & Dispatch Stepper
+            </h4>
+            <div id="stepperContainer"
+              class="space-y-3.5 relative pl-5 before:absolute before:left-2 before:top-2 before:bottom-2 before:w-0.5 before:bg-outline-variant">
+              <!-- Populated dynamically via JS -->
+            </div>
+          </div>
+
+          <!-- Card Action Buttons -->
+          <div class="pt-3 border-t border-outline-variant flex flex-wrap gap-2">
+            <button type="button" onclick="escalateTicket()"
+              class="px-2.5 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-semibold flex items-center gap-1 transition shadow-2xs active:scale-95">
+              <span class="material-symbols-outlined text-sm"
+                data-icon="notification_important">notification_important</span>
+              Escalate
+            </button>
+            <button type="button" onclick="messageStaff()"
+              class="px-2.5 py-1.5 bg-surface-container-high hover:bg-surface-variant text-on-surface rounded-lg text-xs font-semibold flex items-center gap-1 transition shadow-2xs active:scale-95">
+              <span class="material-symbols-outlined text-sm" data-icon="chat">chat</span>
+              Message Staff
+            </button>
+            <button type="button" onclick="resolveCurrentTicket()"
+              class="px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold flex items-center gap-1 transition shadow-2xs active:scale-95">
+              <span class="material-symbols-outlined text-sm" data-icon="check_circle">check_circle</span>
+              Mark Resolved
+            </button>
+            <button type="button" onclick="cancelCurrentTicket()"
+              class="px-2.5 py-1.5 bg-slate-700 hover:bg-slate-800 text-white rounded-lg text-xs font-semibold flex items-center gap-1 transition shadow-2xs active:scale-95">
+              <span class="material-symbols-outlined text-sm" data-icon="cancel">cancel</span>
+              Cancel
+            </button>
+            <button type="button" onclick="repromptAgent()"
+              class="px-2.5 py-1.5 bg-surface-container hover:bg-surface-variant text-on-surface-variant rounded-lg text-xs font-semibold flex items-center gap-1 transition shadow-2xs active:scale-95">
+              <span class="material-symbols-outlined text-sm" data-icon="replay">replay</span>
+              Reprompt
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Secondary Queue Ticket Preview Cards Header -->
+      <div class="flex items-center justify-between text-xs font-semibold text-on-surface px-1">
+        <span>Active Department Queue (<span id="secondaryCount">0</span>)</span>
+        <span class="text-[10px] text-on-surface-variant font-normal">Click any card to inspect</span>
+      </div>
+
+      <!-- Secondary Queue Ticket Preview Cards -->
+      <div id="secondaryQueueContainer" class="space-y-2.5">
+        <!-- Populated dynamically via JS -->
+      </div>
+    </section>
+
+    <!-- RIGHT COLUMN: Dual-Pane: Staff Dispatch Matrix & Live SQLite / LangGraph Monitor (4 Cols) -->
+    <section class="lg:col-span-4 flex flex-col space-y-4 h-[calc(100vh-5.5rem)] overflow-y-auto scrollbar-thin">
+
+      <!-- TOP WIDGET: Department Staff On-Duty & Auto-Routing Queue -->
+      <div class="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm p-4">
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-primary text-base" data-icon="badge">badge</span>
+            <h3 class="font-headline-sm text-xs font-semibold text-on-surface">Department Staff On-Duty & Routing Queue
+            </h3>
+          </div>
+          <span
+            class="text-[10px] font-code-sm bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full font-medium">All Units Active</span>
+        </div>
+
+        <!-- 4 Grid Stat Cards -->
+        <div class="grid grid-cols-2 gap-2.5">
+          <!-- Maintenance -->
+          <div class="p-3 rounded-xl bg-surface border border-outline-variant flex items-center justify-between">
+            <div>
+              <div class="text-[10px] font-medium text-on-surface-variant">Maintenance</div>
+              <div class="font-headline-sm text-xs font-bold text-on-surface mt-0.5" id="staffMaintCount">2 / 3 Avail.</div>
+            </div>
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-surface-container-lowest"></span>
+          </div>
+          <!-- Housekeeping -->
+          <div class="p-3 rounded-xl bg-surface border border-outline-variant flex items-center justify-between">
+            <div>
+              <div class="text-[10px] font-medium text-on-surface-variant">Housekeeping</div>
+              <div class="font-headline-sm text-xs font-bold text-on-surface mt-0.5" id="staffHouseCount">5 / 6 Active</div>
+            </div>
+            <span class="w-2.5 h-2.5 rounded-full bg-amber-500 ring-2 ring-surface-container-lowest"></span>
+          </div>
+          <!-- Dining -->
+          <div class="p-3 rounded-xl bg-surface border border-outline-variant flex items-center justify-between">
+            <div>
+              <div class="text-[10px] font-medium text-on-surface-variant">In-Room Dining</div>
+              <div class="font-headline-sm text-xs font-bold text-on-surface mt-0.5" id="staffDiningCount">3 / 4 Active</div>
+            </div>
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-surface-container-lowest"></span>
+          </div>
+          <!-- Laundry -->
+          <div class="p-3 rounded-xl bg-surface border border-outline-variant flex items-center justify-between">
+            <div>
+              <div class="text-[10px] font-medium text-on-surface-variant">Express Laundry</div>
+              <div class="font-headline-sm text-xs font-bold text-on-surface mt-0.5" id="staffLaundryCount">2 / 2 Active</div>
+            </div>
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-surface-container-lowest"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- BOTTOM WIDGET: SQLite Database & LangGraph Graph State (Dual Tabs) -->
+      <div
+        class="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm flex-1 flex flex-col overflow-hidden min-h-[360px]">
+        <!-- Sub-tabs header -->
+        <div class="flex items-center justify-between bg-surface-container-low px-4 border-b border-outline-variant">
+          <div class="flex space-x-2">
+            <button
+              class="py-2.5 px-3 text-xs font-semibold border-b-2 border-primary text-primary transition-colors flex items-center gap-1.5"
+              id="tabBtnSqlite" onclick="switchRightTab('sqlite')">
+              <span class="material-symbols-outlined text-xs" data-icon="table_chart">table_chart</span>
+              <span>SQLite Table: requests</span>
+            </button>
+            <button
+              class="py-2.5 px-3 text-xs font-medium text-on-surface-variant hover:text-on-surface border-b-2 border-transparent transition-colors flex items-center gap-1.5"
+              id="tabBtnGraph" onclick="switchRightTab('graph')">
+              <span class="material-symbols-outlined text-xs" data-icon="hub">hub</span>
+              <span>LangGraph State Flow</span>
+            </button>
+          </div>
+          <span class="font-code-sm text-[10px] text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded">Live SQLite Sync</span>
+        </div>
+
+        <!-- VIEW 1: SQLite Table Inspector -->
+        <div class="flex-1 p-3.5 flex flex-col overflow-hidden space-y-2.5" id="viewSqlite">
+          <div class="flex items-center justify-between">
+            <span class="font-code-sm text-[10px] text-on-surface-variant">schema: `hotel_service.db.service_requests`
+              (<span id="totalRowCount">0</span> rows)</span>
+            <div class="flex items-center gap-1 text-[10px]">
+              <span class="px-2 py-0.5 bg-secondary-container text-primary font-code-sm rounded">WAL Mode</span>
+            </div>
+          </div>
+
+          <!-- Table Container -->
+          <div
+            class="flex-1 overflow-x-auto overflow-y-auto scrollbar-thin border border-outline-variant rounded-lg bg-surface-container-lowest max-h-[230px]">
+            <table class="w-full text-left font-code-sm text-[10px]">
+              <thead
+                class="bg-surface-container-low text-on-surface-variant sticky top-0 border-b border-outline-variant z-10">
+                <tr>
+                  <th class="px-2.5 py-2 font-semibold">ticket</th>
+                  <th class="px-2.5 py-2 font-semibold">room</th>
+                  <th class="px-2.5 py-2 font-semibold">category</th>
+                  <th class="px-2.5 py-2 font-semibold">priority</th>
+                  <th class="px-2.5 py-2 font-semibold">status</th>
+                  <th class="px-2.5 py-2 font-semibold">staff</th>
+                  <th class="px-2.5 py-2 font-semibold">created_at</th>
+                </tr>
+              </thead>
+              <tbody id="sqliteTableBody" class="divide-y divide-outline-variant/40">
+                <!-- Populated dynamically via JS -->
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Real-Time SQL Query Debug Terminal -->
+          <div
+            class="p-2.5 bg-inverse-surface rounded-xl text-surface-container-lowest font-code-sm text-[10px] border border-outline/40 space-y-1">
+            <div
+              class="flex items-center justify-between pb-1 text-[9px] text-outline-variant border-b border-outline/30">
+              <span class="flex items-center gap-1.5 text-emerald-400 font-semibold">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Live SQLite Query Hook
+              </span>
+              <span id="sqlExecTime">Execution: 0.4ms</span>
+            </div>
+            <div class="text-primary-fixed overflow-x-auto whitespace-nowrap pt-0.5 text-[10px]" id="sqlTerminalText">
+              <span class="text-rose-300">SELECT * FROM</span> service_requests <span class="text-rose-300">ORDER BY</span> id DESC;
+            </div>
+          </div>
+        </div>
+
+        <!-- VIEW 2: LangGraph Interactive State Flow Visualizer -->
+        <div class="hidden flex-1 p-3.5 flex flex-col overflow-y-auto scrollbar-thin bg-surface/30 space-y-2.5"
+          id="viewGraph">
+          <div class="flex items-center justify-between">
+            <span class="font-code-sm text-[11px] text-on-surface-variant">StateGraph Topology:
+              `hotel_concierge_flow`</span>
+            <span class="text-[10px] font-mono px-2 py-0.5 bg-primary/10 text-primary rounded-md font-bold">Compiled & Active</span>
+          </div>
+
+          <!-- Interactive Node Diagram Flow -->
+          <div class="space-y-1.5 text-xs font-code-sm">
+            <!-- Node: Start / Input -->
+            <div
+              class="p-2 rounded-lg bg-surface-container-lowest border border-outline-variant flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                <span class="font-semibold text-on-surface text-[11px]">1. InputNode: GuestChatStream</span>
+              </div>
+              <span class="text-[9px] text-on-surface-variant">type: HumanInput</span>
+            </div>
+            <div class="flex justify-center -my-1 text-outline">
+              <span class="material-symbols-outlined text-xs" data-icon="arrow_downward">arrow_downward</span>
+            </div>
+            <!-- Node: Intent Classifier -->
+            <div
+              class="p-2 rounded-lg bg-surface-container-lowest border border-outline-variant flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+                <span class="font-semibold text-on-surface text-[11px]">2. IntentParserNode & RoomResolver</span>
+              </div>
+              <span class="text-[9px] text-primary font-bold">score: 0.98</span>
+            </div>
+            <div class="flex justify-center -my-1 text-outline">
+              <span class="material-symbols-outlined text-xs" data-icon="arrow_downward">arrow_downward</span>
+            </div>
+            <!-- Node: Router -->
+            <div
+              class="p-2 rounded-lg bg-surface-container border border-primary/40 flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-xs text-primary" data-icon="alt_route">alt_route</span>
+                <span class="font-semibold text-primary text-[11px]">3. ServiceClassifier & PriorityRouter</span>
+              </div>
+              <span class="text-[9px] px-1.5 py-0.5 bg-primary-container text-white rounded">Branching</span>
+            </div>
+            <!-- Fan-out Sub-Agents -->
+            <div
+              class="grid grid-cols-2 gap-1.5 pl-3 border-l-2 border-dashed border-outline-variant ml-3 my-0.5 text-[9px]">
+              <div
+                class="p-1.5 rounded bg-rose-50 border border-rose-200 text-rose-800 font-bold flex items-center justify-between">
+                <span>MaintenanceAgent</span>
+                <span class="material-symbols-outlined text-[10px]" data-icon="check">check</span>
+              </div>
+              <div class="p-1.5 rounded bg-amber-50 border border-amber-200 text-amber-800 font-medium">
+                HousekeepingAgent</div>
+              <div class="p-1.5 rounded bg-sky-50 border border-sky-200 text-sky-800 font-medium">DiningAgent</div>
+              <div class="p-1.5 rounded bg-purple-50 border border-purple-200 text-purple-800 font-medium">LaundryAgent</div>
+            </div>
+            <div class="flex justify-center -my-1 text-outline">
+              <span class="material-symbols-outlined text-xs" data-icon="arrow_downward">arrow_downward</span>
+            </div>
+            <!-- Node: SQLite Tools -->
+            <div
+              class="p-2 rounded-lg bg-surface-container-lowest border border-outline-variant flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-xs text-amber-600" data-icon="build">build</span>
+                <span class="font-semibold text-on-surface text-[11px]">4. ActionExecutor: SQLiteWriteTool</span>
+              </div>
+              <span class="text-[9px] text-emerald-600 font-mono font-semibold">Tx Committed</span>
+            </div>
+            <div class="flex justify-center -my-1 text-outline">
+              <span class="material-symbols-outlined text-xs" data-icon="arrow_downward">arrow_downward</span>
+            </div>
+            <!-- Node: Synthesizer -->
+            <div
+              class="p-2 rounded-lg bg-surface-container-low border border-outline-variant flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-emerald-600"></span>
+                <span class="font-semibold text-on-surface text-[11px]">5. ResponseSynthesizer & Dispatch</span>
+              </div>
+              <span class="text-[9px] text-on-surface-variant">END State</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- BOTTOM STATUS RAIL -->
+  <footer
+    class="bg-inverse-surface text-surface-container-lowest px-8 py-2.5 border-t border-outline flex flex-wrap items-center justify-between text-xs font-code-sm z-40">
+    <div class="flex items-center gap-4">
+      <span class="flex items-center gap-1.5">
+        <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+        <span>LangGraph Checkpointer: memory://sqlite_wal_active</span>
+      </span>
+      <span class="text-outline">|</span>
+      <span class="text-surface-container-highest" id="footerThreadId">Thread: #HA-8492-ACTIVE</span>
+      <span class="text-outline">|</span>
+      <span class="text-primary-fixed">Active Workers: 4/4 Initialized</span>
+    </div>
+    <div class="flex items-center gap-4 text-[11px] text-outline-variant">
+      <span>Latency: <span id="footerLatency">28ms</span></span>
+      <span>Architecture: LangGraph Agentic AI + SQLite</span>
+      <span class="text-surface-bright">The Grand Azure Hospitality OS v4.8</span>
+    </div>
+  </footer>
+
+  <!-- LIGHTWEIGHT CLIENT-SIDE INTERACTIVITY & REST BACKEND CONNECTIONS -->
+  <script>
+    let currentRoom = "412";
+    let activeTickets = [];
+    let selectedTicketId = "HA-8492";
+    let currentDeptFilter = "All";
+
+    const availableGuests = [
+      { room: "412", name: "Eleanor Vance", tier: "VIP Titanium", initials: "EV" },
+      { room: "101", name: "Ramesh Kumar", tier: "VIP Platinum", initials: "RK" },
+      { room: "604", name: "Elena Rostova", tier: "VIP Diamond", initials: "ER" },
+      { room: "PH-02", name: "Lord Alistair Sterling", tier: "VIP Royal", initials: "AS" },
+      { room: "318", name: "Kenji Sato", tier: "Standard", initials: "KS" },
+      { room: "205", name: "Michael Brown", tier: "Standard", initials: "MB" }
+    ];
+
+    function showToast(message, type = "success") {
+      const container = document.getElementById('toastContainer');
+      if (!container) return;
+      const toast = document.createElement('div');
+      const bg = type === 'error' ? 'bg-red-700' : type === 'info' ? 'bg-blue-700' : 'bg-inverse-surface';
+      toast.className = `${bg} text-white px-4 py-2.5 rounded-xl shadow-lg border border-white/20 font-code-sm text-xs flex items-center gap-2 toast-enter pointer-events-auto`;
+      toast.innerHTML = `
+        <span class="material-symbols-outlined text-sm">${type === 'error' ? 'error' : 'check_circle'}</span>
+        <span>${message}</span>
+      `;
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transition = 'opacity 0.4s ease';
+        setTimeout(() => toast.remove(), 400);
+      }, 3500);
+    }
+
+    function escapeHtml(unsafe) {
+      if (!unsafe) return "";
+      return String(unsafe)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function formatMarkdown(text) {
+      if (!text) return "";
+      // Replace code boxes (ticket box)
+      let out = text.replace(/```([\s\S]*?)```/g, function(match, p1) {
+        return '<pre class="bg-black/40 p-2.5 rounded-lg border border-primary/30 font-mono text-[10px] my-2 overflow-x-auto text-primary-fixed leading-tight">' + escapeHtml(p1.trim()) + '</pre>';
+      });
+      // Replace bold
+      out = out.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+      // Replace italic
+      out = out.replace(/\*(.*?)\*/g, '<em>$1</em>');
+      // Replace newlines
+      out = out.replace(/\n/g, '<br/>');
+      return out;
+    }
+
+    function selectGuestSuite(roomNum) {
+      const g = availableGuests.find(x => x.room === roomNum) || { room: roomNum, name: `Guest in ${roomNum}`, tier: "Standard", initials: "GT" };
+      currentRoom = g.room;
+
+      document.getElementById('roomNumberCircle').innerText = g.room;
+      document.getElementById('guestNameHeader').innerText = `Suite ${g.room}: ${g.name}`;
+      document.getElementById('guestTierHeader').innerText = g.tier;
+      document.getElementById('headerGuestLabel').innerText = `Suite ${g.room}: ${g.name} (${g.tier})`;
+      document.getElementById('userAvatar').innerText = g.initials;
+      document.getElementById('chatSessionLabel').innerText = `Live LangGraph Session • Suite ${g.room}`;
+      
+      const initGuestLabel = document.getElementById('initialGuestBubbleLabel');
+      if (initGuestLabel) initGuestLabel.innerText = `${g.name} (Suite ${g.room})`;
+
+      // Highlight active suite pill
+      availableGuests.forEach(guest => {
+        const btn = document.getElementById(`suiteBtn_${guest.room}`);
+        if (btn) {
+          if (guest.room === g.room) {
+            btn.className = "px-2.5 py-1 rounded-md text-[11px] font-semibold bg-primary text-on-primary transition shrink-0";
+          } else {
+            btn.className = "px-2.5 py-1 rounded-md text-[11px] font-medium bg-surface text-on-surface-variant hover:bg-surface-container transition shrink-0";
+          }
+        }
+      });
+
+      showToast(`Switched active guest suite to Suite ${g.room} (${g.name})`, "info");
+      refreshLiveState();
+    }
+
+    function cycleGuestSuite() {
+      const curIdx = availableGuests.findIndex(x => x.room === currentRoom);
+      const nextIdx = (curIdx + 1) % availableGuests.length;
+      selectGuestSuite(availableGuests[nextIdx].room);
+    }
+
+    function switchRightTab(tab) {
+      const sqliteView = document.getElementById('viewSqlite');
+      const graphView = document.getElementById('viewGraph');
+      const btnSqlite = document.getElementById('tabBtnSqlite');
+      const btnGraph = document.getElementById('tabBtnGraph');
+
+      if (tab === 'sqlite') {
+        sqliteView.classList.remove('hidden');
+        graphView.classList.add('hidden');
+        btnSqlite.className = "py-2.5 px-3 text-xs font-semibold border-b-2 border-primary text-primary transition-colors flex items-center gap-1.5";
+        btnGraph.className = "py-2.5 px-3 text-xs font-medium text-on-surface-variant hover:text-on-surface border-b-2 border-transparent transition-colors flex items-center gap-1.5";
+      } else {
+        sqliteView.classList.add('hidden');
+        graphView.classList.remove('hidden');
+        btnGraph.className = "py-2.5 px-3 text-xs font-semibold border-b-2 border-primary text-primary transition-colors flex items-center gap-1.5";
+        btnSqlite.className = "py-2.5 px-3 text-xs font-medium text-on-surface-variant hover:text-on-surface border-b-2 border-transparent transition-colors flex items-center gap-1.5";
+      }
+    }
+
+    function filterDept(dept) {
+      currentDeptFilter = dept;
+      const depts = [
+        { id: "filterAllBtn", name: "All" },
+        { id: "filterMaintBtn", name: "Maintenance" },
+        { id: "filterHouseBtn", name: "Housekeeping" },
+        { id: "filterDiningBtn", name: "Room Service" },
+        { id: "filterLaundryBtn", name: "Laundry" }
+      ];
+
+      depts.forEach(d => {
+        const btn = document.getElementById(d.id);
+        if (btn) {
+          if (d.name === dept || (dept === 'Dining' && d.name === 'Room Service')) {
+            btn.className = "px-2.5 py-1 rounded-lg text-xs font-semibold bg-primary text-on-primary border border-primary/30 transition";
+          } else {
+            btn.className = "px-2.5 py-1 rounded-lg text-xs font-medium text-on-surface-variant hover:bg-surface-container transition";
+          }
+        }
+      });
+
+      refreshLiveState();
+    }
+
+    function dispatchEmergency() {
+      handleChatSubmit("EMERGENCY DISPATCH: Immediate urgent assistance required in Suite " + currentRoom + "!");
+    }
+
+    async function handleChatSubmit(customText) {
+      const input = document.getElementById('chatInputBox');
+      const userText = (typeof customText === 'string' ? customText : (input ? input.value : "")).trim();
+      if (!userText) return;
+      if (input) input.value = "";
+
+      const chatStream = document.getElementById('chatStream');
+      const activeGuest = availableGuests.find(x => x.room === currentRoom) || { name: "Eleanor Vance", room: currentRoom };
+
+      // 1. Append User Message Bubble
+      const userBubble = document.createElement('div');
+      userBubble.className = "flex flex-col items-start max-w-[90%]";
+      userBubble.innerHTML = `
+        <div class="flex items-center gap-1.5 text-[11px] font-label-md text-on-surface-variant mb-1 px-1">
+          <span class="material-symbols-outlined text-xs">person</span>
+          <span>${activeGuest.name} (Suite ${currentRoom})</span>
+        </div>
+        <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-3.5 text-on-surface text-xs leading-relaxed shadow-sm">
+          ${escapeHtml(userText)}
+        </div>
+      `;
+      chatStream.appendChild(userBubble);
+
+      // 2. Append Live Thinking / Processing Indicator
+      const loaderBubble = document.createElement('div');
+      loaderBubble.id = "chatLoader";
+      loaderBubble.className = "flex items-center gap-2 p-3 text-xs text-primary font-code-sm bg-surface-container-low rounded-xl border border-outline-variant max-w-[85%]";
+      loaderBubble.innerHTML = `
+        <span class="w-2 h-2 rounded-full bg-primary animate-ping"></span>
+        <span>LangGraph Agent analyzing intent & routing request to SQLite...</span>
+      `;
+      chatStream.appendChild(loaderBubble);
+      chatStream.scrollTop = chatStream.scrollHeight;
+
+      // 3. Post to /api/chat
+      try {
+        const startTime = Date.now();
+        const res = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: userText, room: currentRoom })
+        });
+        const data = await res.json();
+        const latency = Date.now() - startTime;
+        const latencyEl = document.getElementById('footerLatency');
+        if (latencyEl) latencyEl.innerText = `${latency}ms`;
+
+        // Remove Loader
+        const loader = document.getElementById('chatLoader');
+        if (loader) loader.remove();
+
+        // 4. Append LangGraph State Execution Trace Box
+        if (data.reasoning_chain && data.reasoning_chain.length > 0) {
+          const traceBox = document.createElement('div');
+          traceBox.className = "p-3.5 bg-inverse-surface text-surface-container-lowest rounded-xl border border-outline/50 font-code-sm text-[11px] shadow-sm space-y-2.5";
+          traceBox.innerHTML = `
+            <div class="flex items-center justify-between pb-1.5 border-b border-outline/30">
+              <div class="flex items-center gap-2 text-primary-fixed font-semibold">
+                <span class="material-symbols-outlined text-sm">psychology</span>
+                LangGraph State Execution Trace
+              </div>
+              <span class="px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 text-[10px] border border-emerald-700/50">state: ${data.intent || 'processed'}</span>
+            </div>
+            <div class="grid grid-cols-2 gap-x-3 gap-y-1.5 text-surface-container-highest text-[11px]">
+              <div>Intent: <span class="text-amber-300 font-mono">${data.intent || 'General'}</span></div>
+              <div>Department: <span class="text-sky-300 font-mono">${data.service_type || 'Concierge'}</span></div>
+              <div>Priority: <span class="text-rose-300 font-mono font-bold">${(data.priority || 'Medium').toUpperCase()}</span></div>
+              <div>Target SLA: <span class="text-emerald-300 font-mono">${data.eta_minutes || 20} mins</span></div>
+            </div>
+            <div class="pt-1.5 border-t border-outline/30 flex items-center justify-between text-[10px] text-outline-variant">
+              <span>Tools: ${data.card_data ? 'create_service_request()' : 'query_hotel_knowledge()'}</span>
+              <span class="text-primary-fixed font-mono">ticket: ${data.card_data ? '#' + data.card_data.ticket_id : '#INFO'}</span>
+            </div>
+          `;
+          chatStream.appendChild(traceBox);
+        }
+
+        // 5. Append AI Concierge Response Bubble
+        const aiBubble = document.createElement('div');
+        aiBubble.className = "flex flex-col items-end max-w-[92%] ml-auto";
+        const formattedHtml = formatMarkdown(data.response);
+
+        aiBubble.innerHTML = `
+          <div class="flex items-center gap-1.5 text-[11px] font-label-md text-primary mb-1 px-1">
+            <span class="material-symbols-outlined text-xs">smart_toy</span>
+            <span>Grand Azure AI Concierge</span>
+          </div>
+          <div class="bg-primary-container text-on-primary rounded-xl p-3.5 text-xs leading-relaxed shadow-sm space-y-2.5 w-full">
+            <div>${formattedHtml}</div>
+            <div class="pt-2 border-t border-primary/40 text-[11px] flex items-center justify-between">
+              <span class="flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-sm">schedule</span>
+                ETA: ~${data.eta_minutes || 15} mins
+              </span>
+              <span class="px-2 py-0.5 rounded bg-black/25 text-[10px] font-mono">${data.card_data ? 'Auto-Dispatched' : 'Answered'}</span>
+            </div>
+          </div>
+          <div class="flex items-center gap-2 mt-1 px-1">
+            <span class="text-[10px] text-on-surface-variant font-code-sm">Processed by LangGraph StateGraph Node Pipeline</span>
+          </div>
+        `;
+        chatStream.appendChild(aiBubble);
+        chatStream.scrollTop = chatStream.scrollHeight;
+
+        // Auto-select newly created ticket
+        if (data.card_data && data.card_data.ticket_id) {
+          selectedTicketId = data.card_data.ticket_id;
+          showToast(`✨ Ticket #${data.card_data.ticket_id} created and dispatched to ${data.card_data.service_type}!`);
+        }
+
+        // Refresh SQLite tables & center ticket card
+        await refreshLiveState();
+
+      } catch (err) {
+        console.error("Chat API error:", err);
+        const loader = document.getElementById('chatLoader');
+        if (loader) loader.remove();
+
+        const errBubble = document.createElement('div');
+        errBubble.className = "p-3 bg-red-100 border border-red-300 text-red-800 text-xs rounded-xl";
+        errBubble.innerText = "Error contacting AI agent service. Please verify server connection.";
+        chatStream.appendChild(errBubble);
+      }
+    }
+
+    async function refreshLiveState(showSyncToast = false) {
+      try {
+        const res = await fetch('/api/requests');
+        const data = await res.json();
+        const allReqs = data.requests || [];
+        
+        // Update all count badges
+        const countBadge = document.getElementById('countAll');
+        if (countBadge) countBadge.innerText = allReqs.length;
+        const totalRowBadge = document.getElementById('totalRowCount');
+        if (totalRowBadge) totalRowBadge.innerText = allReqs.length;
+
+        // Department counts
+        let maint = 0, house = 0, dining = 0, laundry = 0;
+        allReqs.forEach(t => {
+          const s = (t.service_type || '').toLowerCase();
+          if (s.includes('maint')) maint++;
+          else if (s.includes('house')) house++;
+          else if (s.includes('room') || s.includes('dining')) dining++;
+          else if (s.includes('laundry')) laundry++;
+        });
+
+        if (document.getElementById('countMaint')) document.getElementById('countMaint').innerText = maint;
+        if (document.getElementById('countHouse')) document.getElementById('countHouse').innerText = house;
+        if (document.getElementById('countDining')) document.getElementById('countDining').innerText = dining;
+        if (document.getElementById('countLaundry')) document.getElementById('countLaundry').innerText = laundry;
+
+        // Apply department filtering
+        if (currentDeptFilter === "All") {
+          activeTickets = allReqs;
+        } else {
+          activeTickets = allReqs.filter(t => {
+            const st = (t.service_type || '').toLowerCase();
+            const filt = currentDeptFilter.toLowerCase();
+            if (filt.includes('dining') || filt.includes('room')) {
+              return st.includes('room') || st.includes('dining');
+            }
+            return st.includes(filt);
+          });
+        }
+
+        // Render SQLite Table rows
+        const tbody = document.getElementById('sqliteTableBody');
+        if (tbody) {
+          tbody.innerHTML = '';
+          allReqs.forEach((r, idx) => {
+            const tr = document.createElement('tr');
+            const cleanTid = r.ticket_id.replace('#', '');
+            const cleanSelected = (selectedTicketId || '').replace('#', '');
+            const isSelected = cleanTid === cleanSelected || (idx === 0 && !selectedTicketId);
+            
+            tr.className = isSelected ? "bg-primary/15 hover:bg-primary/20 transition-colors cursor-pointer font-medium" : "hover:bg-surface-container transition-colors cursor-pointer";
+            tr.onclick = () => selectTicket(r.ticket_id);
+
+            const prioClass = r.priority === 'Urgent' ? 'text-rose-600 font-bold' : r.priority === 'High' ? 'text-amber-700 font-semibold' : 'text-blue-700';
+            const statusClass = r.status === 'Completed' ? 'text-emerald-700 font-semibold' : r.status === 'In Progress' ? 'text-amber-700 font-semibold' : r.status === 'Cancelled' ? 'text-red-700 line-through' : 'text-primary font-medium';
+
+            tr.innerHTML = `
+              <td class="px-2.5 py-2 font-semibold text-primary">#${r.ticket_id}</td>
+              <td class="px-2.5 py-2">${r.room_number}</td>
+              <td class="px-2.5 py-2">${r.service_type}</td>
+              <td class="px-2.5 py-2 ${prioClass}">${r.priority}</td>
+              <td class="px-2.5 py-2 ${statusClass}">${r.status}</td>
+              <td class="px-2.5 py-2 truncate max-w-[110px]">${r.assigned_staff || 'Auto-Assigned'}</td>
+              <td class="px-2.5 py-2 text-on-surface-variant">${r.created_at.split(' ')[1] || r.created_at}</td>
+            `;
+            tbody.appendChild(tr);
+          });
+        }
+
+        // Update Center Column active ticket card
+        if (allReqs.length > 0) {
+          const cleanSel = (selectedTicketId || '').replace('#', '');
+          const currentT = allReqs.find(t => t.ticket_id.replace('#', '') === cleanSel) || allReqs[0];
+          renderActiveCenterCard(currentT);
+        }
+
+        // Render Secondary Queue cards
+        const queueContainer = document.getElementById('secondaryQueueContainer');
+        const secondaryCountEl = document.getElementById('secondaryCount');
+        if (queueContainer) {
+          queueContainer.innerHTML = '';
+          const cleanSel = (selectedTicketId || '').replace('#', '');
+          const secondary = activeTickets.filter(t => t.ticket_id.replace('#', '') !== cleanSel);
+          if (secondaryCountEl) secondaryCountEl.innerText = secondary.length;
+
+          if (secondary.length === 0) {
+            queueContainer.innerHTML = `<div class="text-center py-6 text-xs text-on-surface-variant bg-surface-container-low rounded-xl border border-outline-variant/60">No other tickets in this queue.</div>`;
+          } else {
+            secondary.slice(0, 6).forEach(r => {
+              const card = document.createElement('div');
+              card.className = "bg-surface-container-lowest p-3.5 rounded-xl border border-outline-variant shadow-sm hover:border-primary/60 transition cursor-pointer flex items-center justify-between group";
+              card.onclick = () => selectTicket(r.ticket_id);
+
+              const prioBg = r.priority === 'Urgent' ? 'bg-rose-100 text-rose-800 border-rose-300' : r.priority === 'High' ? 'bg-amber-100 text-amber-800 border-amber-300' : 'bg-blue-100 text-blue-800 border-blue-200';
+              const statusBg = r.status === 'Completed' ? 'text-emerald-700 bg-emerald-50' : r.status === 'In Progress' ? 'text-amber-700 bg-amber-50' : r.status === 'Cancelled' ? 'text-red-700 bg-red-50' : 'text-primary bg-primary/10';
+
+              card.innerHTML = `
+                <div class="space-y-1 flex-1 pr-2">
+                  <div class="flex items-center gap-1.5 flex-wrap">
+                    <span class="px-2 py-0.5 rounded font-code-md text-[9px] ${prioBg} border font-bold">${r.priority.toUpperCase()}</span>
+                    <span class="font-code-md text-xs font-bold text-on-surface group-hover:text-primary transition">#${r.ticket_id}</span>
+                    <span class="text-xs text-on-surface-variant font-label-md">• Suite ${r.room_number}</span>
+                    <span class="text-[10px] px-1.5 py-0.5 rounded font-semibold ${statusBg}">${r.status}</span>
+                  </div>
+                  <div class="text-xs font-medium text-on-surface truncate max-w-[280px]">${escapeHtml(r.description)}</div>
+                  <div class="text-[10px] text-on-surface-variant">${r.service_type} • Assigned: ${r.assigned_staff || 'Staff Lead'}</div>
+                </div>
+                <div class="text-right shrink-0">
+                  <span class="font-code-sm text-xs text-emerald-700 font-semibold">ETA: ~${r.eta_minutes}m</span>
+                  <div class="text-[10px] text-primary font-medium mt-0.5 group-hover:underline">Inspect ➔</div>
+                </div>
+              `;
+              queueContainer.appendChild(card);
+            });
+          }
+        }
+
+        // Update Terminal Debug
+        if (allReqs.length > 0) {
+          const cleanSel = (selectedTicketId || '').replace('#', '');
+          const latest = allReqs.find(t => t.ticket_id.replace('#', '') === cleanSel) || allReqs[0];
+          const termEl = document.getElementById('sqlTerminalText');
+          if (termEl) {
+            termEl.innerHTML = `
+              <span class="text-rose-300">SELECT</span> * <span class="text-rose-300">FROM</span> service_requests <span class="text-rose-300">WHERE</span> ticket_id = <span class="text-amber-300">'${latest.ticket_id}'</span>;
+            `;
+          }
+        }
+
+        if (showSyncToast) {
+          showToast("✨ Agent State & SQLite Database Synchronized!");
+        }
+
+      } catch (err) {
+        console.error("Failed to load requests:", err);
+      }
+    }
+
+    function renderActiveCenterCard(ticket) {
+      if (!ticket) return;
+      selectedTicketId = ticket.ticket_id;
+
+      // 1. Badge & Header
+      const badgeEl = document.getElementById('mainTicketBadge');
+      if (badgeEl) {
+        const isUrgent = ticket.priority === 'Urgent';
+        const isHigh = ticket.priority === 'High';
+        badgeEl.className = isUrgent ?
+          "px-2.5 py-1 rounded font-code-md text-[11px] font-semibold bg-rose-100 text-rose-800 border border-rose-300 flex items-center gap-1.5 pulse-urgent" :
+          isHigh ?
+          "px-2.5 py-1 rounded font-code-md text-[11px] font-semibold bg-amber-100 text-amber-800 border border-amber-300 flex items-center gap-1.5" :
+          "px-2.5 py-1 rounded font-code-md text-[11px] font-semibold bg-blue-100 text-blue-800 border border-blue-200 flex items-center gap-1.5";
+        badgeEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full ${isUrgent ? 'bg-rose-600' : isHigh ? 'bg-amber-600' : 'bg-blue-600'}"></span> ${ticket.priority.toUpperCase()} - P1`;
+      }
+
+      const idEl = document.getElementById('mainTicketId');
+      if (idEl) idEl.innerText = `#${ticket.ticket_id}`;
+
+      const suiteEl = document.getElementById('mainTicketSuite');
+      if (suiteEl) suiteEl.innerText = `Suite ${ticket.room_number} • ${ticket.guest_name || 'Guest'}`;
+
+      const titleEl = document.getElementById('mainTicketTitle');
+      if (titleEl) titleEl.innerText = ticket.description;
+
+      const deptEl = document.getElementById('mainTicketDept');
+      if (deptEl) deptEl.innerText = ticket.service_type;
+
+      const descEl = document.getElementById('mainTicketDesc');
+      if (descEl) descEl.innerText = `Status: ${ticket.status} | Assigned: ${ticket.assigned_staff || 'Duty Team'} | Notes: ${ticket.notes || 'Normal 5-Star SLA'}`;
+
+      // 2. Staff Card
+      const staff = ticket.assigned_staff || 'Duty Lead';
+      const staffNameEl = document.getElementById('mainStaffName');
+      if (staffNameEl) staffNameEl.innerText = staff;
+
+      const staffRoleEl = document.getElementById('mainStaffRole');
+      if (staffRoleEl) {
+        const s = ticket.service_type.toLowerCase();
+        staffRoleEl.innerText = s.includes('maint') ? "Engineering Duty Specialist" : s.includes('house') ? "Housekeeping Senior Lead" : s.includes('room') || s.includes('dining') ? "Culinary F&B Lead" : s.includes('laundry') ? "Express Valet Master" : "Concierge Duty Officer";
+      }
+
+      const staffAvatarEl = document.getElementById('mainStaffAvatar');
+      if (staffAvatarEl) {
+        const initials = staff.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() || 'ST';
+        staffAvatarEl.innerText = initials;
+      }
+
+      const staffStatusEl = document.getElementById('mainStaffStatus');
+      if (staffStatusEl) {
+        if (ticket.status === 'Completed') {
+          staffStatusEl.className = "text-xs font-bold text-emerald-700 flex items-center gap-1 justify-end";
+          staffStatusEl.innerHTML = `<span class="material-symbols-outlined text-sm">check_circle</span> <span>Resolved</span>`;
+        } else if (ticket.status === 'Cancelled') {
+          staffStatusEl.className = "text-xs font-bold text-red-700 flex items-center gap-1 justify-end";
+          staffStatusEl.innerHTML = `<span class="material-symbols-outlined text-sm">cancel</span> <span>Cancelled</span>`;
+        } else {
+          staffStatusEl.className = "text-xs font-bold text-emerald-700 flex items-center gap-1 justify-end";
+          staffStatusEl.innerHTML = `<span class="material-symbols-outlined text-sm">directions_walk</span> <span>Dispatched</span>`;
+        }
+      }
+
+      const staffEtaEl = document.getElementById('mainStaffEta');
+      if (staffEtaEl) staffEtaEl.innerText = `ETA: ~${ticket.eta_minutes} mins`;
+
+      // 3. SLA Progress Bar
+      const slaLabelEl = document.getElementById('mainSlaWindowLabel');
+      if (slaLabelEl) slaLabelEl.innerText = `Live SLA Window: ${ticket.eta_minutes || 20} mins`;
+
+      const slaPercentEl = document.getElementById('mainSlaPercentText');
+      const slaBarEl = document.getElementById('mainSlaBar');
+      if (slaPercentEl && slaBarEl) {
+        if (ticket.status === 'Completed') {
+          slaPercentEl.innerText = `100% Completed (Resolved on SLA)`;
+          slaPercentEl.className = "font-semibold text-emerald-700";
+          slaBarEl.style.width = "100%";
+          slaBarEl.className = "h-full bg-emerald-500 rounded-full transition-all duration-500";
+        } else if (ticket.status === 'In Progress') {
+          slaPercentEl.innerText = `In Progress (~${Math.round(ticket.eta_minutes * 0.6)} mins remaining)`;
+          slaPercentEl.className = "font-semibold text-amber-700";
+          slaBarEl.style.width = "65%";
+          slaBarEl.className = "h-full bg-gradient-to-r from-emerald-500 to-amber-500 rounded-full transition-all duration-500";
+        } else if (ticket.status === 'Cancelled') {
+          slaPercentEl.innerText = `Request Cancelled`;
+          slaPercentEl.className = "font-semibold text-red-700";
+          slaBarEl.style.width = "100%";
+          slaBarEl.className = "h-full bg-red-400 rounded-full transition-all duration-500";
+        } else {
+          slaPercentEl.innerText = `Pending Dispatch (~${ticket.eta_minutes} mins)`;
+          slaPercentEl.className = "font-semibold text-blue-700";
+          slaBarEl.style.width = "30%";
+          slaBarEl.className = "h-full bg-primary rounded-full transition-all duration-500";
+        }
+      }
+
+      // 4. Dynamic Stepper Generation
+      const stepper = document.getElementById('stepperContainer');
+      if (stepper) {
+        const isDone = ticket.status === 'Completed';
+        const isInProgress = ticket.status === 'In Progress';
+        const isCancelled = ticket.status === 'Cancelled';
+        const timeStr = ticket.created_at.split(' ')[1] || "12:00:00";
+
+        stepper.innerHTML = `
+          <!-- Step 1 -->
+          <div class="relative flex items-start gap-3 text-xs">
+            <span class="absolute -left-5 top-0.5 w-3.5 h-3.5 rounded-full bg-emerald-600 ring-4 ring-surface-container-lowest"></span>
+            <div class="flex-1">
+              <div class="flex items-center justify-between">
+                <span class="font-semibold text-on-surface">1. Request Ingested & Parsed</span>
+                <span class="font-code-sm text-[10px] text-on-surface-variant">${timeStr}</span>
+              </div>
+              <p class="text-[11px] text-on-surface-variant mt-0.5">Suite #${ticket.room_number} token parsed & verified.</p>
+            </div>
+          </div>
+          <!-- Step 2 -->
+          <div class="relative flex items-start gap-3 text-xs">
+            <span class="absolute -left-5 top-0.5 w-3.5 h-3.5 rounded-full bg-emerald-600 ring-4 ring-surface-container-lowest"></span>
+            <div class="flex-1">
+              <div class="flex items-center justify-between">
+                <span class="font-semibold text-on-surface">2. LangGraph Scored & Classified</span>
+                <span class="font-code-sm text-[10px] text-on-surface-variant">Classified</span>
+              </div>
+              <p class="text-[11px] text-on-surface-variant mt-0.5">Scored ${ticket.priority} priority for ${ticket.service_type}.</p>
+            </div>
+          </div>
+          <!-- Step 3 -->
+          <div class="relative flex items-start gap-3 text-xs">
+            <span class="absolute -left-5 top-0.5 w-3.5 h-3.5 rounded-full bg-emerald-600 ring-4 ring-surface-container-lowest"></span>
+            <div class="flex-1">
+              <div class="flex items-center justify-between">
+                <span class="font-semibold text-on-surface">3. SQLite DB Record Created</span>
+                <span class="font-code-sm text-[10px] text-on-surface-variant">WAL Committed</span>
+              </div>
+              <p class="text-[11px] font-code-sm text-primary mt-0.5">INSERT INTO requests (ticket: #${ticket.ticket_id})</p>
+            </div>
+          </div>
+          <!-- Step 4 -->
+          <div class="relative flex items-start gap-3 text-xs">
+            <span class="absolute -left-5 top-0.5 w-3.5 h-3.5 rounded-full ${isDone || isInProgress ? 'bg-emerald-600' : 'bg-primary-container pulse-urgent'} ring-4 ring-surface-container-lowest"></span>
+            <div class="flex-1">
+              <div class="flex items-center justify-between">
+                <span class="font-semibold ${isDone || isInProgress ? 'text-on-surface' : 'text-primary'}">4. Auto-dispatched to On-Duty Staff</span>
+                <span class="font-code-sm text-[10px] text-primary">Assigned</span>
+              </div>
+              <p class="text-[11px] text-on-surface mt-0.5">Assigned to ${ticket.assigned_staff || 'Department Duty Team'}.</p>
+            </div>
+          </div>
+          <!-- Step 5 -->
+          <div class="relative flex items-start gap-3 text-xs ${isDone ? '' : 'opacity-70'}">
+            <span class="absolute -left-5 top-0.5 w-3.5 h-3.5 rounded-full ${isDone ? 'bg-emerald-600' : isCancelled ? 'bg-red-500' : 'bg-outline-variant'} ring-4 ring-surface-container-lowest"></span>
+            <div class="flex-1">
+              <div class="flex items-center justify-between">
+                <span class="font-semibold text-on-surface">5. On-Site Inspection & Resolution</span>
+                <span class="font-code-sm text-[10px] text-on-surface-variant">${isDone ? 'Completed' : isCancelled ? 'Cancelled' : 'In Progress'}</span>
+              </div>
+              <p class="text-[11px] text-on-surface-variant mt-0.5">${isDone ? 'Service delivered and verified with guest.' : isCancelled ? 'Request was cancelled.' : `Estimated check-in: ~${ticket.eta_minutes} minutes.`}</p>
+            </div>
+          </div>
+        `;
+      }
+
+      const threadEl = document.getElementById('footerThreadId');
+      if (threadEl) threadEl.innerText = `Thread: #${ticket.ticket_id}-ACTIVE`;
+    }
+
+    function selectTicket(ticketId) {
+      selectedTicketId = ticketId;
+      refreshLiveState();
+    }
+
+    async function resolveCurrentTicket() {
+      if (!selectedTicketId) return;
+      try {
+        await fetch('/api/update_status', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ticket_id: selectedTicketId, status: 'Completed', notes: 'Resolved via Orchestrator UI' })
+        });
+        showToast(`✅ Ticket #${selectedTicketId} marked as Resolved!`);
+        refreshLiveState();
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    async function escalateTicket() {
+      if (!selectedTicketId) return;
+      try {
+        await fetch('/api/update_status', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ticket_id: selectedTicketId, status: 'In Progress', notes: 'Escalated to Duty Manager' })
+        });
+        showToast(`⚡ Ticket #${selectedTicketId} escalated to Duty Manager!`);
+        refreshLiveState();
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    async function cancelCurrentTicket() {
+      if (!selectedTicketId) return;
+      if (confirm(`Cancel service request #${selectedTicketId}?`)) {
+        try {
+          const res = await fetch('/api/cancel', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ticket_id: selectedTicketId, reason: 'Cancelled by Orchestrator' })
+          });
+          const data = await res.json();
+          showToast(data.message || `Ticket #${selectedTicketId} cancelled.`);
+          refreshLiveState();
+        } catch (err) {
+          console.error(err);
+        }
+      }
+    }
+
+    function messageStaff() {
+      handleChatSubmit(`Staff Dispatch Alert on #${selectedTicketId}: Please provide an immediate ETA update.`);
+    }
+
+    function repromptAgent() {
+      handleChatSubmit(`LangGraph Priority Re-assessment on #${selectedTicketId}: Re-check queue position and SLA.`);
+    }
+
+    async function resetAndSeedDB() {
+      if (confirm("Reset and re-seed the SQLite database with fresh hotel requests?")) {
+        await fetch('/api/reset_db', { method: 'POST' });
+        showToast("Database successfully reset to initial seed state!");
+        refreshLiveState();
+      }
+    }
+
+    // Auto-initialize on load
+    window.addEventListener('DOMContentLoaded', () => {
+      refreshLiveState();
+      setInterval(() => refreshLiveState(false), 3500); // Polling update every 3.5s
+    });
+  </script>
+</body>
+
+</html>
