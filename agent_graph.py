@@ -445,7 +445,7 @@ def node_synthesize_response(state: AgentState) -> AgentState:
         if faqs:
             best_faq = faqs[0]
             response = (
-                f"🏨 **The Grand Azure Luxury Hotel Information**:\n\n"
+                f"🏨 **Hotel service systemHotel Information**:\n\n"
                 f"**{best_faq['question']}**\n\n"
                 f"{best_faq['answer']}\n\n"
                 f"*Category: {best_faq['category']} | Dial 0 for Front Desk assistance.*"

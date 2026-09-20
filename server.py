@@ -1,5 +1,5 @@
 """
-The Grand Azure Luxury Hotel - Web Server
+Hotel service systemHotel - Web Server
 Combines FastAPI REST endpoints, Stitch UI Orchestrator, and Gradio AI Studio.
 """
 
